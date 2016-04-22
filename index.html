@@ -156,6 +156,7 @@
                         var curY = yPosition;
                         addToPoints(points, curX, curY);
                         for (var i = 0, len = pathCommands.length; i < len; i++) {
+
                             var pathCommandParts = pathCommands[i].match(/([lvh])((?:-)?\d+)(?:\s((?:-)?\d+))?/);
                             //console.log(pathCommandParts);
                             var commandName = pathCommandParts[1], change1 = +pathCommandParts[2], change2 = +pathCommandParts[3];
@@ -169,6 +170,10 @@
                             } else if (commandName === 'h' && change1 !== 0) {
                                 curX += change1;
                                 addToPoints(points, curX, curY);
+                            }
+
+                            if(points.length > 100){
+                                break;
                             }
                         }
                         var xDiff = curX - xPosition;

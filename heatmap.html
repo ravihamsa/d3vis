@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .heatmap {
+            width: 320px;
+            height: 568px;
+            background-color: #fff;
+            border:1px solid #ccc;
+        }
+
+
+
+    </style>
+    <script src="js/d3.js"></script>
+    <script src="js/heatmap.js"></script>
+</head>
+<body>
+
+<select name="creative" id="creativeSelect"></select>
+<select name="device" id="deviceSelect"></select>
+
+<div class="heatmap">
+
+</div>
+
+<script>
+
+
+
+
+    var updateHeatMap = function (device, creative, data) {
+        var heatMapDiv = document.querySelector('.heatmap');
+        var dims = device.split('*');
+        heatMapDiv.style.width=dims[0]+'px';
+        heatMapDiv.style.height=dims[1]+'px';
+        heatMapDiv.innerHTML = '';
+
+        var heatmapInstance = h337.create({
+            container: document.querySelector('.heatmap'),
+            radius: 20
+        });
+
+        for (var i = 0; i < data.length; i++) {
+            var curData = data[i];
+            try{
+                heatmapInstance.addData({
+                    x: curData.x,
+                    y: curData.y,
+                    value: 1
+                })
+            }catch(e){
+                console.log(curData, e)
+            }
+        }
+    }
+
+
+    var devices = ["320*568", "320*480", "375*667", "414*736", "568*320", "480*320"];
+    var creatives = ["SC_USiOS_Lyft_1sdelay", "SC_USiOS_nodelay_Lyft_Po_8Oct"];
+
+    var adOptions = function(id, options){
+        var select = document.getElementById(id);
+        for(var i=0;i<options.length; i++){
+            var option = document.createElement('option');
+            option.innerHTML = options[i];
+            option.setAttribute('value', options[i]);
+            select.appendChild(option);
+
+        }
+
+        select.addEventListener('change', function(){
+            renderHeatMap(document.querySelector('#deviceSelect').value, document.querySelector('#creativeSelect').value)
+        }, false)
+    }
+
+    adOptions('deviceSelect', devices);
+    adOptions('creativeSelect', creatives);
+
+
+
+    var renderHeatMap = function(device, creative){
+
+        var heatMapDiv = document.querySelector('.heatmap');
+        heatMapDiv.innerHTML = 'computing';
+
+        d3.csv("data/yoda_RMCheck_SCUSiOSLyft.csv")
+                .row(function (d, index) {
+                    var label = d['Custom Label'];
+                    var dataParts = label.split(',');
+                    return {
+                        label: label,
+                        action: d['Custom Action'],
+                        creativeName: d['Creative Name'],
+                        x:parseInt(dataParts[7]),
+                        y:parseInt(dataParts[8]),
+                        deviceSize:dataParts[4]
+                    }
+                })
+                .get(function (error, rows) {
+                    if (error) {
+                        console.log(error);
+                        return;
+                    }
+                    var data = rows.filter(function (d, index) {
+                        return d.creativeName === creative && d.action === 'cont-touch' && d.deviceSize===device;
+                    })
+
+                    updateHeatMap(device, creative, data)
+
+                });
+    }
+
+
+    renderHeatMap(devices[0], creatives[0])
+
+</script>
+
+</body>
+</html>
