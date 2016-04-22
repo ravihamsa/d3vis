@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script src="js/d3.js"></script>
+<script>
+    var w = 700;
+    var h = 600;
+    var pad = 80;
+
+    var time_format = d3.time.format("%I:%M:%S");
+
+    var gd = example_data(4);
+
+    var xScale = d3.time.scale()
+            .domain(d3.extent(gd[0].data, function (d) {
+                return d[0];
+            }))
+            .range([pad, w - pad]);
+
+    var yScale = d3.scale.linear()
+            .domain([0, d3.max(gd[0].data, function (d) {
+                return d[1];
+            }) * 2])
+            .range([h - pad, pad]);
+
+    var canvas = d3.select("body")
+            .append("svg")
+            .attr("class", "chart")
+            .attr("width", w)
+            .attr("height", h);
+
+    var xaxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .tickFormat(time_format);
+
+    var yaxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+    var line = d3.svg.line()
+            .x(function (d) {
+                return xScale(d[0]);
+            })
+            .y(function (d) {
+                return yScale(d[1]);
+            })
+            .interpolate("linear");
+
+    // Just for a grey background.
+    canvas.append("rect")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("fill", "#E8E8E8");
+
+
+    // Add line
+    console.log(gd);
+    var tmp = canvas.selectAll("path")
+            .data(gd)
+            .enter()
+            .append("path")
+            .attr("d", function (d) { return line(d.data) })
+            .attr("stroke", "black")
+            .attr("stroke-width", 1)
+            .attr("fill", "none");
+
+    // Add x-axis.
+    canvas.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (h - pad) + ")")
+            .call(xaxis)
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function (d) {
+                return "rotate(-65)"
+            });
+
+    // Add y-axis
+    canvas.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(" + pad + ", 0)")
+            .call(yaxis);
+
+
+    function example_data(val) {
+
+        if (val == "4") {
+            return [
+                {
+                    "label": "Data_1",
+                    "data": [[1404438592000, 21.09], [1404438593000, 10.85], [1404438594000, 15.74], [1404438595000, 20.86], [1404438596000, 10.83], [1404438597000, 8.92], [1404438598000, 23.68], [1404438599000, 20.68], [1404438600000, 14.68], [1404438601000, 4.65]]
+                },
+                {
+                    "label": "Data_2",
+                    "data": [[1404438592000, 3.219], [1404438593000, 1.641], [1404438594000, 6.68], [1404438595000, 2.543], [1404438596000, 8.522], [1404438597000, 4.616], [1404438598000, 9.703], [1404438599000, 3.737], [1404438600000, 8.752], [1404438601000, 1.791]]
+                }
+            ];
+        }
+    }
+
+</script>
+</body>
+</html>
